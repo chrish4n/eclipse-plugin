@@ -15,15 +15,14 @@
  */
 package org.gradle.eclipse.views;
 
-
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
@@ -57,23 +56,24 @@ public class TaskView extends ViewPart {
 	}
 
 	/**
-	 * This is a callback that will allow us to create the viewer and
-	 * initialize it.
+	 * This is a callback that will allow us to create the viewer and initialize
+	 * it.
 	 */
-	public void createPartControl(Composite parent) {
+	public void createPartControl(final Composite parent) {
 		toolkit = new FormToolkit(parent.getDisplay());
 		form = toolkit.createForm(parent);
 		form.setText("Available Gradle Tasks");
 		toolkit.decorateFormHeading(form);
+		form.getBody().setLayout(new FillLayout(SWT.VERTICAL));
 
-		taskviewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);	
-		
+		final Tree createTree = toolkit.createTree(form.getBody(), SWT.V_SCROLL);
+		taskviewer = new TreeViewer(createTree);
 		taskviewer.setLabelProvider(new WorkbenchLabelProvider());
 		taskviewer.setContentProvider(new BaseWorkbenchContentProvider());
 		toolkit.adapt(taskviewer.getControl(), false, false);
-		
+
 		gradleFileSelectionListener = new GradleFileSelectionListener(this);
-		ISelectionService selectionService = getSite().getWorkbenchWindow().getSelectionService();
+		final ISelectionService selectionService = getSite().getWorkbenchWindow().getSelectionService();
 		selectionService.addSelectionListener(gradleFileSelectionListener);
 	}
 
@@ -93,10 +93,11 @@ public class TaskView extends ViewPart {
 		super.dispose();
 	}
 
-	public void setModel(IFile buildFile) {
-		List<ProjectView> projectViews = GradleExecScheduler.getInstance().getProjectViews(buildFile.getLocationURI().getPath());
+	public void setModel(final IFile buildFile) {
+		final List<ProjectView> projectViews = GradleExecScheduler.getInstance().getProjectViews(
+				buildFile.getLocationURI().getPath());
 		taskviewer.setInput(projectViews.get(0));
-		taskviewer.refresh();	
+		taskviewer.refresh();
 		form.redraw();
 	}
 }
